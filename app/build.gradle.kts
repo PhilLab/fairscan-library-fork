@@ -43,11 +43,12 @@ plugins {
     `maven-publish`
 }
 
-group = "org.fairscan"
-// Appending -SNAPSHOT (rather than reusing fairscanVersionName as-is) marks this a
-// changing module, so consumers resolving it from mavenLocal always pick up a fresh
-// republish instead of trusting a stale cached artifact under the same version.
-version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
+// Same group JitPack assigns to this fork, so coordinates are identical locally and remotely.
+// JitPack passes -Pversion=<git tag>; local builds fall back to a SNAPSHOT.
+group = "com.github.phillab.fairscan-library-fork"
+if (version == "unspecified") {
+    version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
+}
 
 android {
     namespace = "org.fairscan.app"
@@ -162,6 +163,7 @@ afterEvaluate {
     publishing {
         publications {
             register<MavenPublication>("release") {
+                artifactId = "scan-ui"
                 from(components["release"])
             }
         }

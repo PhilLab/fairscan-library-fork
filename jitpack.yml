@@ -1,0 +1,6 @@
+jdk:
+  - openjdk17
+install:
+  # Only publish the two library modules: skips the default `build` (lint, tests, :sample).
+  # $VERSION is the git tag being built.
+  - ./gradlew -Pversion=$VERSION publishToMavenLocal

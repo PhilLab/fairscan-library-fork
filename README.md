@@ -1,3 +1,149 @@
+> [!IMPORTANT]
+> **This is an unofficial fork of [FairScan](https://github.com/pynicolas/FairScan), made so that other apps can embed its scanner.**
+> It is **not** maintained by, endorsed by or affiliated with the FairScan author, and it is
+> **not** intended as a general-purpose library or an official FairScan artifact.
+>
+> - Issues with the **library integration** (packaging, embedding, intents, build) belong **here**.
+> - Issues with **document detection or the UI** belong to [upstream](https://github.com/pynicolas/FairScan/issues),
+>   but **only if you have reproduced them in the original FairScan app first**.
+>
+> FairScan is licensed under the **GNU GPL v3**; so is this fork, and apps embedding it must be GPL-compatible.
+> The FairScan name, license and attribution remain visible on the About screen.
+
+Artifacts are built by [JitPack](https://jitpack.io) from the git tags of this
+repository (`v<FairScan version>-lib-<N>`). The FairScan version is occasionally bumped for bugfixes or new features,
+and the `-lib-<N>` suffix is incremented for library-specific changes or fixes.
+
+There are no guarantees about API stability. Always pin an exact tag, as a different tag might
+introduce breaking changes.
+
+## Using FairScan as a library
+
+1. Add the dependency.
+   ```kotlin
+   // settings.gradle.kts
+   dependencyResolutionManagement {
+       repositories {
+           maven {
+               url = uri("https://jitpack.io")
+               content { includeGroup("com.github.phillab.fairscan-library-fork") }
+           }
+       }
+   }
+
+   // build.gradle.kts
+   dependencies {
+       implementation("com.github.phillab.fairscan-library-fork:scan-ui:<tag>")
+   }
+   ```
+   JitPack builds the code on its own servers, so:
+   - Always pin an exact tag. Never use a branch name or a `-SNAPSHOT`.
+   - Enable [Gradle dependency verification](https://docs.gradle.org/current/userguide/dependency_verification.html)
+     and commit the result: `./gradlew --write-verification-metadata sha256 help`.
+
+2. Tell FairScan where it can store its files, in your own app's `AndroidManifest.xml`:
+   ```xml
+   <application>
+       ...
+       <meta-data
+           android:name="org.fairscan.app.STORAGE_SUBDIR"
+           android:value="fairscan" />
+   </application>
+   ```
+   This is required - FairScan throws immediately at startup if it's missing. The value names one
+   subdirectory FairScan creates and confines itself to under **both** your app's own `filesDir`
+   and `cacheDir` (i.e. `<filesDir>/<value>` and `<cacheDir>/<value>`, independently)
+   - `filesDir` holds persistent data (in-progress scans, OCR language data, debug logs)
+   - `cacheDir` holds transient data (PDF export staging, per-call session folders)
+     that FairScan deletes on its own after a while.
+
+   An empty value (`android:value=""`) has FairScan write directly into your `filesDir` and `cacheDir`
+   themselves instead of a subdirectory of each. Only do this if nothing else in your app uses
+   those directories, since FairScan's file creation and cleanup might interfere with your app.
+3. It is advised to hide the "Support" section of the About screen, so your users don't
+   directly contact FairScan's developers for support. Add to your manifest:
+   ```xml
+   <application>
+       ...
+       <meta-data
+           android:name="org.fairscan.app.SHOW_SUPPORT"
+           android:value="false" />
+   </application>
+   ```
+   It defaults to `true`.
+4. Start a scan and get the result:
+   ```kotlin
+   import org.fairscan.app.FairScan
+
+   val scanLauncher = registerForActivityResult(
+       ActivityResultContracts.StartActivityForResult()
+   ) { result ->
+       val pdfUri = FairScan.pdfUriFromResult(result.resultCode, result.data)
+       if (pdfUri != null) {
+           // copy the content of pdfUri immediately, FairScan deletes it later
+       }
+   }
+   scanLauncher.launch(FairScan.scanToPdfIntent(context))
+   ```
+   Use an **explicit** intent this way rather than firing `FairScan.ACTION_SCAN_TO_PDF` as an
+   implicit intent (as described in "Scan to PDF via intent" below, for a separately installed
+   FairScan): the library's `MainActivity` has no intent-filter of its own, precisely so that
+   embedding it doesn't turn your host app's own "scan" action into a disambiguation dialog against
+   a separately installed FairScan on the same device.
+
+---
+
+## Local library development
+
+### Testing uncommitted changes
+1. Run `./gradlew publishToMavenLocal` in this repository
+2. In your app add
+  `mavenLocal { content { includeGroup("com.github.phillab.fairscan-library-fork") } }` to your
+  repositories.
+3. Locally built artifacts have the version `<FairScan version>-SNAPSHOT`
+  (e.g. `2.3.0-SNAPSHOT`); re-run the command whenever you change this checkout.
+
+### Checking a published tag
+Build the same tag yourself with `git checkout <tag> && ./gradlew publishToMavenLocal -Pversion=<tag>`,
+then compare the AAR/POM in `~/.m2` with the downloaded ones (the AAR contents, not the zip bytes, as timestamps differ).
+
+### Building entirely from source
+If you prefer not to depend on a binary host at all, add this repository as a git submodule
+and use `includeBuild("path/to/fork")`; the build then happens entirely from source.
+
+---
+
+## Updating the fork to a newer FairScan version
+
+1. Fetch upstream and bring this branch onto the new release (or merge it, if you prefer):
+   ```bash
+   git fetch origin --tags
+   git rebase v<new FairScan version>
+   ```
+   Resolve conflicts if there are any.
+2. Check what upstream changed that the library setup depends on:
+   - Intent filters or other activity/application attributes changed in upstream's
+     `app/src/main/AndroidManifest.xml` belong in `sample/src/main/AndroidManifest.xml`; the
+     library manifest must stay free of them.
+   - New code must not use `filesDir`/`cacheDir` directly, or `R.string.app_name`, as these
+     bypass the storage subdirectory or resolve to the host app's values.
+3. Verify locally:
+   ```bash
+   ./gradlew clean check :sample:assembleRelease publishToMavenLocal
+   ```
+4. Push the branch (`git push --force-with-lease` after a rebase), then tag and push the tag:
+   ```bash
+   git tag v<new FairScan version>-lib-1
+   git push <remote> v<new FairScan version>-lib-1
+   ```
+   Tags are never moved once published. For another build on the same FairScan version
+   (e.g. a fix in the library setup), use the next number: `-lib-2`, `-lib-3`, ...
+5. Open `https://jitpack.io/#phillab/fairscan-library-fork` and trigger the build of the new
+   tag (click "Get it") and check that it is green.
+6. Switch the apps using this library to the new tag.
+
+---
+
 <p align="center">
   <img src="metadata/en-US/images/icon.png" alt="FairScan icon" width="120" />
 </p>
@@ -111,84 +257,6 @@ When started via this intent:
 
 See an example app: [fairscan-intent-sample](https://github.com/pynicolas/fairscan-intent-sample)
 
----
-
-## Experimental: Using FairScan as a library
-
-As of now, the library isn't published to a real repository, so consume it from `mavenLocal`
-until it is:
-1. Clone the FairScan repository, e.g. next to your project's code.
-2. Publish it to your local Maven repository:
-   ```
-   ./gradlew publishToMavenLocal
-   ```
-   Re-run this whenever you pull in a different FairScan commit/tag.
-3. In your project's `settings.gradle.kts`, add `mavenLocal()` as a repository (content-filtered
-   so it's only consulted for FairScan, not for every other dependency):
-   ```kotlin
-   dependencyResolutionManagement {
-       repositories {
-           mavenLocal {
-               content { includeGroup("org.fairscan") }
-           }
-       }
-   }
-   ```
-4. In your module's `build.gradle.kts`, depend on the exact version you published
-   (`fairscanVersionName` in [`gradle/libs.versions.toml`](gradle/libs.versions.toml), with a
-   `-SNAPSHOT` suffix):
-   ```kotlin
-   dependencies {
-       implementation("org.fairscan:app:2.3.0-SNAPSHOT")
-   }
-   ```
-5. Tell FairScan where it can store its files, in your own app's `AndroidManifest.xml`:
-   ```xml
-   <application>
-       ...
-       <meta-data
-           android:name="org.fairscan.app.STORAGE_SUBDIR"
-           android:value="fairscan" />
-   </application>
-   ```
-   This is required - FairScan throws immediately at startup if it's missing. The value names one
-   subdirectory FairScan creates and confines itself to under **both** your app's own `filesDir`
-   and `cacheDir` (i.e. `<filesDir>/<value>` and `<cacheDir>/<value>`, independently)
-   - `filesDir` holds persistent data (in-progress scans, OCR language data, debug logs)
-   - `cacheDir` holds transient data (PDF export staging, per-call session folders)
-     that FairScan deletes on its own after a while.
-   An empty value (`android:value=""`) has FairScan write directly into your `filesDir`/`cacheDir`
-   themselves instead of a subdirectory of each. Only do this if nothing else in your app uses
-   those directories, since FairScan's file creation and cleanup might interfere with your app.
-6. Optionally, hide the "Support" section of the About screen,
-   e.g. if your users should not contact FairScan's developers:
-   ```xml
-   <meta-data
-       android:name="org.fairscan.app.SHOW_SUPPORT"
-       android:value="false" />
-   ```
-   It defaults to `true`.
-7. Start a scan and get the result:
-   ```kotlin
-   val scanLauncher = registerForActivityResult(
-       ActivityResultContracts.StartActivityForResult()
-   ) { result ->
-       val pdfUri = FairScan.pdfUriFromResult(result.resultCode, result.data)
-       if (pdfUri != null) {
-           // copy the content of pdfUri immediately, FairScan deletes it later
-       }
-   }
-   scanLauncher.launch(FairScan.scanToPdfIntent(context))
-   ```
-   Use an **explicit** intent this way rather than firing `FairScan.ACTION_SCAN_TO_PDF` as an
-   implicit intent (as described above for a separately installed FairScan): `:app`'s
-   `MainActivity` has no intent-filter of its own, precisely so that embedding it doesn't turn
-   your host app's own "scan" action into a disambiguation dialog against a separately installed
-   FairScan on the same device.
-
-Note: this is experimental and there are no guarantees about API stability. Make sure you always
-pin the FairScan checkout to a known version, as pulling in a different commit/tag might
-introduce breaking changes.
 ---
 
 ## Technical details

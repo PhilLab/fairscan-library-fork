@@ -5,10 +5,11 @@ plugins {
 }
 
 // :app is published standalone (see app/build.gradle.kts) and depends on this module,
-// so this module needs to be published too, under the same group so :app's POM
-// dependency on it resolves.
-group = "org.fairscan"
-version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
+// so this module needs to be published too, under the same group.
+group = "com.github.phillab.fairscan-library-fork"
+if (version == "unspecified") {
+    version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -29,6 +30,7 @@ dependencies {
 publishing {
     publications {
         register<MavenPublication>("release") {
+            artifactId = "imageprocessing"
             from(components["java"])
         }
     }
