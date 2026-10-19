@@ -288,17 +288,5 @@ Related blog posts:
 
 ---
 
-## Build
-
-To build an APK:
-
-```bash
-./gradlew clean check assembleRelease
-```
-To build an Android App Bundle:
-```bash
-./gradlew clean check :standalone:bundleRelease
-```
-
 ## License
 This project is licensed under the GNU GPLv3. See [LICENSE](LICENSE) for details.

@@ -21,7 +21,7 @@ import android.net.Uri
 import java.io.File
 
 // Entry point for host apps embedding :app as a library. MainActivity has no intent-filter of
-// its own here (see AndroidManifest.xml) - only :standalone declares the SCAN_TO_PDF and
+// its own here (see AndroidManifest.xml) - only :sample declares the SCAN_TO_PDF and
 // GET_CONTENT filters, so that starting FairScan from within a host app can't turn into a
 // disambiguation dialog against a separately installed, standalone FairScan. Launching by
 // explicit intent (naming the activity directly, as scanToPdfIntent does) never shows a chooser.

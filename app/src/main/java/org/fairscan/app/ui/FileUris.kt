@@ -22,7 +22,7 @@ import java.io.File
 /**
  * Fixed, FairScan-owned authority - not applicationId-derived - so it can't collide with a host
  * app's own FileProvider. Must be kept in sync with the <provider> declaration in
- * standalone/src/main/AndroidManifest.xml
+ * sample/src/main/AndroidManifest.xml
  */
 const val FILE_PROVIDER_AUTHORITY = "org.fairscan.app.fileprovider"
 

@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "FairScan"
 include(":app")
-include(":standalone")
+include(":sample")
 include(":imageprocessing")
 include(":evaluation")
 
