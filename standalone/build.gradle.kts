@@ -19,7 +19,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 96 // increment by 3 because of ABI-specific APKs
-        versionName = libs.versions.fairscanVersionName.get()
+        versionName = version.toString().removePrefix("v")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

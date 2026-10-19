@@ -36,7 +36,7 @@ val downloadTFLiteModel = tasks.register<DownloadTFLiteModelTask>("downloadTFLit
 }
 
 plugins {
-    alias(libs.plugins.android.library)
+    id("com.android.library")
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.aboutLibrariesAndroid)
     alias(libs.plugins.kotlin.serialization)
@@ -44,11 +44,9 @@ plugins {
 }
 
 // Same group JitPack assigns to this fork, so coordinates are identical locally and remotely.
-// JitPack passes -Pversion=<git tag>; local builds fall back to a SNAPSHOT.
+// The version is the git tag, passed by JitPack as -Pversion; local builds get the default from
+// gradle.properties. It is not tied to upstream's versionName, so merging upstream needs no edit.
 group = "com.github.phillab.fairscan-library-fork"
-if (version == "unspecified") {
-    version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
-}
 
 android {
     namespace = "org.fairscan.app"
@@ -67,8 +65,8 @@ android {
         // The About screen and PDF metadata read BuildConfig.VERSION_NAME from this
         // module. Library modules don't get a VERSION_NAME field automatically
         // (only apps) and don't inherit it from the consuming app, so it's added
-        // explicitly here, sourced from the version catalog as single source of truth.
-        buildConfigField("String", "VERSION_NAME", "\"${libs.versions.fairscanVersionName.get()}\"")
+        // explicitly here: the library version, i.e. the git tag (e.g. "2.3.0-lib-1").
+        buildConfigField("String", "VERSION_NAME", "\"${version.toString().removePrefix("v")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("proguard-rules.pro")
@@ -105,7 +103,7 @@ dependencies {
     }
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.startup.runtime)
+    implementation(forkLibs.androidx.startup.runtime)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

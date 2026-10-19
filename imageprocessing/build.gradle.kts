@@ -5,11 +5,8 @@ plugins {
 }
 
 // :app is published standalone (see app/build.gradle.kts) and depends on this module,
-// so this module needs to be published too, under the same group.
+// so this module needs to be published too, under the same group and version (see app/build.gradle.kts).
 group = "com.github.phillab.fairscan-library-fork"
-if (version == "unspecified") {
-    version = "${libs.versions.fairscanVersionName.get()}-SNAPSHOT"
-}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11

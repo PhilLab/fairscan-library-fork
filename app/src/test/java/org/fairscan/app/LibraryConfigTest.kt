@@ -21,7 +21,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
-class AppContainerTest {
+class LibraryConfigTest {
 
     @get:Rule
     var folder: TemporaryFolder = TemporaryFolder()

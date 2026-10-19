@@ -34,7 +34,8 @@ jobs:
         run: ./gradlew clean license check assembleRelease --no-daemon
 
       - name: Upload APKs
-        if: github.event_name == 'pull_request'
+        # Disabled in the library fork: :app no longer produces an APK (see :standalone)
+        if: false
         uses: actions/upload-artifact@v4
         with:
           name: FairScan-APKs-PR-${{ github.event.pull_request.number }}

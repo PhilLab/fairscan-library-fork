@@ -25,3 +25,12 @@ include(":app")
 include(":standalone")
 include(":imageprocessing")
 include(":evaluation")
+
+// Library fork additions, see gradle/fork.versions.toml
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("forkLibs") {
+            from(files("gradle/fork.versions.toml"))
+        }
+    }
+}

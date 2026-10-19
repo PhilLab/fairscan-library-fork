@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+    Only used in the About screen. Deliberately not called "app_name": when embedded as a library,
+    a host app's own app_name would override ours. Kept in its own file to keep strings.xml
+    identical to upstream.
+    -->
+    <string name="fairscan_name" translatable="false">FairScan</string>
+</resources>

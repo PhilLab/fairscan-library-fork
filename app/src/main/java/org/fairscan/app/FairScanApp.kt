@@ -16,7 +16,6 @@ package org.fairscan.app
 
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Environment
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
@@ -42,43 +41,6 @@ import java.io.File
 const val THUMBNAIL_SIZE_DP = 120
 
 private val Context.dataStore by preferencesDataStore(name = "fairscan_settings")
-
-/**
- * The manifest <meta-data> key that specifies the subdirectory name under filesDir/cacheDir
- * which FairScan can use for file storage
- */
-const val STORAGE_SUBDIR_KEY = "org.fairscan.app.STORAGE_SUBDIR"
-
-/**
- * Resolve the FairScan storage subdirectory name from the manifest <meta-data> value, or throw if
- * absent. An empty string is valid, meaning FairScan may use filesDir/cacheDir directly.
- */
-internal fun resolveStorageSubdir(metaDataValue: String?): String =
-    metaDataValue ?: throw IllegalStateException(
-        "FairScan requires a <meta-data android:name=\"$STORAGE_SUBDIR_KEY\" " +
-            "android:value=\"...\" /> entry in your app's <application> manifest tag - the " +
-            "subdirectory FairScan may use under your filesDir/cacheDir, or \"\" to use them " +
-            "directly. See README.md."
-    )
-
-internal fun storageRoot(dir: File, subdir: String): File =
-    if (subdir.isEmpty()) dir else File(dir, subdir)
-
-private fun readStorageSubdirMetaData(context: Context): String? =
-    context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        .metaData?.getString(STORAGE_SUBDIR_KEY)
-
-/**
- * The optional manifest <meta-data> boolean key controlling whether the About screen shows the
- * "Support" section. Defaults to true when absent.
- */
-const val SHOW_SUPPORT_KEY = "org.fairscan.app.SHOW_SUPPORT"
-
-private fun readShowSupportMetaData(context: Context): Boolean =
-    context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        .metaData?.getBoolean(SHOW_SUPPORT_KEY, true) ?: true
 
 class AppContainer(context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

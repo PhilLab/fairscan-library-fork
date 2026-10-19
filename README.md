@@ -100,8 +100,7 @@ introduce breaking changes.
 2. In your app add
   `mavenLocal { content { includeGroup("com.github.phillab.fairscan-library-fork") } }` to your
   repositories.
-3. Locally built artifacts have the version `<FairScan version>-SNAPSHOT`
-  (e.g. `2.3.0-SNAPSHOT`); re-run the command whenever you change this checkout.
+3. Locally built artifacts have the version `local-SNAPSHOT`; re-run the command whenever you change this checkout.
 
 ### Checking a published tag
 Build the same tag yourself with `git checkout <tag> && ./gradlew publishToMavenLocal -Pversion=<tag>`,

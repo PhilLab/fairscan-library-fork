@@ -1,8 +1,4 @@
 [versions]
-# FairScan's own version name — single source of truth for BuildConfig.VERSION_NAME
-# in :app and versionName in :standalone.
-fairscanVersionName = "2.3.0"
-
 agp = "9.4.1"
 kotlin = "2.3.10"
 license = "0.16.1"
@@ -29,11 +25,9 @@ jetbrainsKotlinJvm = "2.3.10"
 kt-coll-immutable = "0.5.2"
 coroutines-test = "1.10.2"
 tesseract4android = "4.9.0"
-androidxStartup = "1.1.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "androidxStartup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -75,7 +69,6 @@ assertj =  { group="org.assertj", name="assertj-core", version.ref = "assertj" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 license =  { id = "com.github.hierynomus.license", version.ref = "license" }

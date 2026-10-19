@@ -1,0 +1,7 @@
+# Additions of the library fork. Kept apart from libs.versions.toml (accessor: forkLibs, registered
+# in settings.gradle.kts) so that upstream's dependency updates never conflict with them.
+[versions]
+androidxStartup = "1.1.1"
+
+[libraries]
+androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "androidxStartup" }
