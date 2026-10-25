@@ -91,8 +91,6 @@ introduce breaking changes.
    embedding it doesn't turn your host app's own "scan" action into a disambiguation dialog against
    a separately installed FairScan on the same device.
 
----
-
 ## Local library development
 
 ### Testing uncommitted changes
@@ -103,16 +101,34 @@ introduce breaking changes.
 3. Locally built artifacts have the version `local-SNAPSHOT`; re-run the command whenever you change this checkout.
 
 ### Checking a published tag
-Build the same tag yourself with `git checkout <tag> && ./gradlew publishToMavenLocal -Pversion=<tag>`,
-then compare the AAR/POM in `~/.m2` with the downloaded ones (the AAR contents, not the zip bytes, as timestamps differ).
+Build the same tag yourself, preferably with the JDK from `jitpack.yml` (OpenJDK 17):
+```bash
+git checkout <tag> && ./gradlew clean publishToMavenLocal -Pversion=<tag>
+```
+Then compare your artifacts in `~/.m2/repository/com/github/phillab/fairscan-library-fork/` with the ones
+downloaded from JitPack (either from `https://jitpack.io/com/github/phillab/fairscan-library-fork/`
+or from your Gradle cache), file by file:
+```bash
+sha256sum ~/.m2/repository/com/github/phillab/fairscan-library-fork/scan-ui/<tag>/scan-ui-<tag>.{aar,pom}
+sha256sum <downloaded>/scan-ui-<tag>.{aar,pom}
+```
+Identical hashes mean the artifact is exactly what you built from source. The AAR is built with
+fixed timestamps, so repeated builds on one machine give the same hash. Another machine or JDK
+can still produce small differences. In that case compare the unpacked contents instead
+(`unzip` both AARs, and `classes.jar` inside them, and diff the files); differences in `.class`
+files need a closer look, while differences in metadata files such as `R.txt` are usually harmless.
 
 ### Building entirely from source
 If you prefer not to depend on a binary host at all, add this repository as a git submodule
 and use `includeBuild("path/to/fork")`; the build then happens entirely from source.
 
----
-
 ## Updating the fork to a newer FairScan version
+
+Once per clone, let git remember how you resolved merge conflicts, so identical conflicts are
+resolved automatically the next time (check `git diff` afterwards, then `git add` the files):
+```bash
+git config rerere.enabled true
+```
 
 1. Fetch upstream and bring this branch onto the new release (or merge it, if you prefer):
    ```bash
